@@ -1,0 +1,138 @@
+DELETE bytes-discuss-02
+PUT bytes-discuss-02
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "analysis": {
+      "filter": {
+        "english_stemmer": {
+          "type": "stemmer",
+          "language": "english"
+        }
+      },
+      "tokenizer": {
+        "char_group": {
+          "type": "char_group",
+          "tokenize_on_chars": [
+            "whitespace",
+            "punctuation"
+          ]
+        }
+      }, 
+      "analyzer": {
+        "html_analyzer": {
+          "filter": [ "lowercase" ],
+          "char_filter": [ "html_strip" ],
+          "tokenizer": "standard"
+        },
+        "title_analyzer": {
+          "char_filter": [ "html_strip" ],
+          "tokenizer": "char_group",
+          "filter": [ "lowercase", "english_stemmer" ]
+        },
+        "path_analyzer": {
+          "filter": [ "lowercase" ],
+          "tokenizer": "path_hierarchy"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "category_name": {
+        "type": "keyword"
+      },
+      "duration": {
+        "type": "unsigned_long"
+      },
+      "question": {
+        "properties": {
+          "author": {
+            "properties": {
+              "avatar_template": {
+                "type": "text",
+                "analyzer": "path_analyzer"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "username": {
+                "type": "search_as_you_type"
+              }
+            }
+          },
+          "date": {
+            "type": "date"
+          },
+          "reads": {
+            "type": "short"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "html_analyzer"
+          }
+        }
+      },
+      "solution": {
+        "properties": {
+          "author": {
+            "properties": {
+              "avatar_template": {
+                "type": "text",
+                "analyzer": "path_analyzer"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "username": {
+                "type": "search_as_you_type"
+              }
+            }
+          },
+          "date": {
+            "type": "date"
+          },
+          "post_number": {
+            "type": "short"
+          },
+          "reads": {
+            "type": "short"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "html_analyzer"
+          }
+        }
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "title_analyzer"
+      },
+      "topic": {
+        "type": "unsigned_long"
+      }
+    }
+  }
+}
+POST _reindex
+{
+  "source": {
+    "index": "bytes-discuss"
+  },
+  "dest": {
+    "index": "bytes-discuss-02"
+  }
+}
