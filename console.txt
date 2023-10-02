@@ -1,0 +1,425 @@
+# Look at some text fields
+GET bytes-discuss/_search?track_total_hits=true
+{
+  "_source": {
+    "includes": [
+      "title",
+      "category_name",
+      "question.text",
+      "question.author",
+      "solution.text",
+      "solution.author"
+    ]
+  }
+}
+
+# Search for grokparsefailure
+GET bytes-discuss/_search?track_total_hits=true
+{
+  "size": 30, 
+  "_source": {
+    "includes": [
+      "title",
+      "category_name",
+      "question.text",
+      "question.author",
+      "solution.text",
+      "solution.author"
+    ]
+  },
+  "query": {
+    "match": {
+      "title": "grokparsefailure"
+    }
+  }
+}
+
+# Search for _grokparsefailure
+GET bytes-discuss/_search?track_total_hits=true
+{
+  "size": 30, 
+  "_source": {
+    "includes": [
+      "title",
+      "category_name",
+      "question.text",
+      "question.author",
+      "solution.text",
+      "solution.author"
+    ]
+  },
+  "query": {
+    "match": {
+      "title": "_grokparsefailure"
+    }
+  }
+}
+
+# Analyze _grokparsefailure
+POST bytes-discuss/_analyze
+{
+  "field": "title",
+  "text": "_grokparsefailure"
+}
+
+# Analyze grokparsefailure
+POST bytes-discuss/_analyze
+{
+  "field": "title",
+  "text": "grokparsefailure"
+}
+
+# The standard analyzer
+POST _analyze
+{
+  "analyzer": "standard",
+  "text": [ "_grokparsefailure PROBLEM", "grokparsefailure issue" ]
+}
+
+# The standard analyzer behind the scene
+POST _analyze
+{
+  "tokenizer": "standard",
+  "filter": [
+    "lowercase"
+  ],
+  "text": [ "_grokparsefailure PROBLEM", "grokparsefailure issue" ]
+}
+
+# Add char_group on whitespace and punctuation
+POST _analyze
+{
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase"
+  ],
+  "text": [ "_grokparsefailure PROBLEM", "grokparsefailure issue" ]
+}
+
+# With HTML elements
+POST _analyze
+{
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase"
+  ],
+  "text": "I have a <b>BIG</b> issue!"
+}
+
+# Add html_strip char_filter
+POST _analyze
+{
+  "char_filter": [
+    "html_strip"
+  ],
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase"
+  ],
+  "text": "I have a <b>BIG</b> issue!"
+}
+
+# Explain the result, step by step
+POST _analyze
+{
+  "explain": true,
+  "char_filter": [
+    "html_strip"
+  ],
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase"
+  ],
+  "text": "I have a <b>BIG</b> issue!"
+}
+
+# Searching for issues
+POST _analyze
+{
+  "char_filter": [
+    "html_strip"
+  ],
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase"
+  ],
+  "text": ["issue", "issues"]
+}
+
+# With an english stemmer
+POST _analyze
+{
+  "char_filter": [
+    "html_strip"
+  ],
+  "tokenizer": {
+    "type": "char_group",
+    "tokenize_on_chars": [
+      "whitespace",
+      "punctuation"
+    ]
+  },
+  "filter": [
+    "lowercase",
+    {
+      "type": "stemmer",
+      "language": "english" 
+    }
+  ],
+  "text": ["issue", "issues"]
+}
+
+# avatar_template
+# dadoonet
+POST bytes-discuss/_analyze
+{
+  "field": "question.author.avatar_template",
+  "text": "/user_avatar/discuss.elastic.co/dadoonet/{size}/44959_2.png"
+}
+POST _analyze
+{
+  "tokenizer": "keyword",
+  "text": "/user_avatar/discuss.elastic.co/dadoonet/{size}/44959_2.png"
+}
+POST _analyze
+{
+  "tokenizer": "path_hierarchy",
+  "text": "/user_avatar/discuss.elastic.co/dadoonet/{size}/44959_2.png"
+}
+
+# Search as you type
+## Search for dado
+POST _analyze
+{
+  "analyzer": "simple",
+  "text": ["dado"]
+}
+
+## Edge Ngrams
+POST _analyze
+{
+  "tokenizer": {
+    "type": "keyword"
+  },
+  "filter": [
+    "lowercase",
+    { 
+      "type": "edge_ngram",
+      "min_gram": 2,
+      "max_gram": 5
+    }
+  ],
+  "text": ["dadoonet"]
+}
+
+
+
+# Search for _grokparsefailure in bytes-discuss-02
+GET bytes-discuss-02/_search
+{
+  "query": {
+    "match": {
+      "title": "_grokparsefailure"
+    }
+  }
+}
+
+
+
+
+
+### DO NOT COPY
+DELETE bytes-discuss-02
+PUT bytes-discuss-02
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "analysis": {
+      "filter": {
+        "english_stemmer": {
+          "type": "stemmer",
+          "language": "english"
+        }
+      },
+      "tokenizer": {
+        "char_group": {
+          "type": "char_group",
+          "tokenize_on_chars": [
+            "whitespace",
+            "punctuation"
+          ]
+        }
+      }, 
+      "analyzer": {
+        "html_analyzer": {
+          "filter": [ "lowercase" ],
+          "char_filter": [ "html_strip" ],
+          "tokenizer": "standard"
+        },
+        "title_analyzer": {
+          "char_filter": [ "html_strip" ],
+          "tokenizer": "char_group",
+          "filter": [ "lowercase", "english_stemmer" ]
+        },
+        "path_analyzer": {
+          "filter": [ "lowercase" ],
+          "tokenizer": "path_hierarchy"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "category_name": {
+        "type": "keyword"
+      },
+      "duration": {
+        "type": "unsigned_long"
+      },
+      "question": {
+        "properties": {
+          "author": {
+            "properties": {
+              "avatar_template": {
+                "type": "text",
+                "analyzer": "path_analyzer"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "username": {
+                "type": "search_as_you_type"
+              }
+            }
+          },
+          "date": {
+            "type": "date"
+          },
+          "reads": {
+            "type": "short"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "html_analyzer"
+          }
+        }
+      },
+      "solution": {
+        "properties": {
+          "author": {
+            "properties": {
+              "avatar_template": {
+                "type": "text",
+                "analyzer": "path_analyzer"
+              },
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword"
+                  }
+                }
+              },
+              "username": {
+                "type": "search_as_you_type"
+              }
+            }
+          },
+          "date": {
+            "type": "date"
+          },
+          "post_number": {
+            "type": "short"
+          },
+          "reads": {
+            "type": "short"
+          },
+          "text": {
+            "type": "text",
+            "analyzer": "html_analyzer"
+          }
+        }
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "title_analyzer"
+      },
+      "topic": {
+        "type": "unsigned_long"
+      }
+    }
+  }
+}
+POST _reindex
+{
+  "source": {
+    "index": "bytes-discuss"
+  },
+  "dest": {
+    "index": "bytes-discuss-02"
+  }
+}
+
+GET bytes-discuss
+GET bytes-discuss/_search 
+{
+  "query": {
+    "match": {
+      "solution.author.username": "dadoonet"
+    }
+  }
+}
+
+# Using the search_as_you_type datatype
+GET bytes-discuss-02/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "dado",
+      "type": "bool_prefix",
+      "fields": [
+        "solution.author.username",
+        "solution.author.username._2gram",
+        "solution.author.username._3gram"
+      ]
+    }
+  }
+}
