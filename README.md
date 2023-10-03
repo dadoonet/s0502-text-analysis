@@ -35,12 +35,7 @@ GET bytes-discuss/_search?track_total_hits=true
   "size": 30, 
   "_source": {
     "includes": [
-      "title",
-      "category_name",
-      "question.text",
-      "question.author",
-      "solution.text",
-      "solution.author"
+      "title"
     ]
   },
   "query": {
@@ -59,12 +54,7 @@ GET bytes-discuss/_search?track_total_hits=true
   "size": 30, 
   "_source": {
     "includes": [
-      "title",
-      "category_name",
-      "question.text",
-      "question.author",
-      "solution.text",
-      "solution.author"
+      "title"
     ]
   },
   "query": {
@@ -404,5 +394,34 @@ This is producing a list of tokens where I can find `dado` so that will match.
 ## Closure
 
 I have applied most of those ideas and I reindexed the whole dataset in a new index named `bytes-discuss-02`. I can check that searching for `_grokparsefailure` in the `title` field now gives 40 results instead of 24.
+
+```json
+GET bytes-discuss-02/_search
+{
+  "_source": {
+    "includes": [
+      "title"
+    ]
+  },
+  "query": {
+    "match": {
+      "title": "_grokparsefailure"
+    }
+  }
+}
+GET bytes-discuss/_search?track_total_hits=true
+{
+  "_source": {
+    "includes": [
+      "title"
+    ]
+  },
+  "query": {
+    "match": {
+      "title": "_grokparsefailure"
+    }
+  }
+}
+```
 
 Tomorrow we will be covering the most important queries you need to know about text search. So don't forget to subscribe to this channel!

@@ -20,12 +20,7 @@ GET bytes-discuss/_search?track_total_hits=true
   "size": 30, 
   "_source": {
     "includes": [
-      "title",
-      "category_name",
-      "question.text",
-      "question.author",
-      "solution.text",
-      "solution.author"
+      "title"
     ]
   },
   "query": {
@@ -41,12 +36,7 @@ GET bytes-discuss/_search?track_total_hits=true
   "size": 30, 
   "_source": {
     "includes": [
-      "title",
-      "category_name",
-      "question.text",
-      "question.author",
-      "solution.text",
-      "solution.author"
+      "title"
     ]
   },
   "query": {
@@ -256,6 +246,25 @@ POST _analyze
 ## bytes-discuss-02 is the bytes-discuss with new analysis settings
 GET bytes-discuss-02/_search
 {
+  "_source": {
+    "includes": [
+      "title"
+    ]
+  },
+  "query": {
+    "match": {
+      "title": "_grokparsefailure"
+    }
+  }
+}
+## It was only 24 before the change
+GET bytes-discuss/_search?track_total_hits=true
+{
+  "_source": {
+    "includes": [
+      "title"
+    ]
+  },
   "query": {
     "match": {
       "title": "_grokparsefailure"
